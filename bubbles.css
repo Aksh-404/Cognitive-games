@@ -1,0 +1,110 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f4f8;
+    color: #333;
+    text-align: center;
+}
+
+#game-container {
+    width: 90%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+#timer {
+    color: #e74c3c;
+}
+
+/* --- UPDATED --- */
+#bubbles-container {
+    position: relative; /* Allows absolute positioning for children */
+    height: 320px; /* Taller container for scattered layout */
+    margin-bottom: 20px;
+}
+
+.bubble {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none; /* Prevents text selection */
+    
+    position: absolute; /* Each bubble is placed manually */
+}
+
+/* --- NEW RULES for Zig-Zag --- */
+.bubble:nth-child(1) {
+    top: 10px;
+    left: calc(50% - 65px); /* Center-top */
+}
+
+.bubble:nth-child(2) {
+    top: 170px;
+    left: 40px; /* Bottom-left */
+}
+
+.bubble:nth-child(3) {
+    top: 100px;
+    right: 40px; /* Mid-right */
+}
+/* --- End of New Rules --- */
+
+
+.bubble:hover {
+    transform: scale(1.05);
+    background-color: #2980b9;
+}
+
+.bubble.selected {
+    background-color: #2ecc71; /* Green when selected */
+    transform: scale(1.1);
+    box-shadow: 0 0 15px #2ecc71;
+}
+
+#feedback {
+    font-size: 1.1em;
+    height: 30px;
+    color: #555;
+}
+
+#start-btn {
+    padding: 12px 25px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+#start-btn:hover {
+    background-color: #27ae60;
+}
+
+#start-btn.hidden {
+    display: none;
+}
