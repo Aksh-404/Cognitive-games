@@ -11,7 +11,7 @@ body {
 
 #game-container {
     width: 90%;
-    max-width: 600px;
+    max-width: 700px; /* Wider for the results table */
     background: #fff;
     border-radius: 10px;
     padding: 20px;
@@ -30,11 +30,13 @@ body {
     color: #e74c3c;
 }
 
-/* --- UPDATED --- */
 #bubbles-container {
-    position: relative; /* Allows absolute positioning for children */
-    height: 320px; /* Taller container for scattered layout */
+    position: relative; 
+    height: 320px; 
     margin-bottom: 20px;
+}
+#bubbles-container.hidden {
+    display: none;
 }
 
 .bubble {
@@ -50,36 +52,29 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s ease;
-    user-select: none; /* Prevents text selection */
-    
-    position: absolute; /* Each bubble is placed manually */
+    user-select: none; 
+    position: absolute; 
 }
 
-/* --- NEW RULES for Zig-Zag --- */
 .bubble:nth-child(1) {
     top: 10px;
     left: calc(50% - 65px); /* Center-top */
 }
-
 .bubble:nth-child(2) {
     top: 170px;
     left: 40px; /* Bottom-left */
 }
-
 .bubble:nth-child(3) {
     top: 100px;
     right: 40px; /* Mid-right */
 }
-/* --- End of New Rules --- */
-
 
 .bubble:hover {
     transform: scale(1.05);
     background-color: #2980b9;
 }
-
 .bubble.selected {
-    background-color: #2ecc71; /* Green when selected */
+    background-color: #2ecc71; 
     transform: scale(1.1);
     box-shadow: 0 0 15px #2ecc71;
 }
@@ -100,11 +95,57 @@ body {
     border-radius: 5px;
     transition: background-color 0.2s;
 }
-
 #start-btn:hover {
     background-color: #27ae60;
 }
-
 #start-btn.hidden {
     display: none;
+}
+
+/* --- NEW: Results Table Styles --- */
+#results-container {
+    text-align: left;
+    max-height: 400px;
+    overflow-y: auto;
+    border-top: 2px solid #eee;
+    margin-top: 20px;
+}
+#results-container.hidden {
+    display: none;
+}
+#results-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+#results-container th, #results-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+#results-container th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+#results-container td:nth-child(2),
+#results-container td:nth-child(3) {
+    text-align: left;
+    font-family: "Courier New", Courier, monospace;
+}
+.result-correct {
+    background-color: #e8f8e8;
+}
+.result-incorrect {
+    background-color: #f8e8e8;
+}
+.result-incorrect strong {
+    color: #e74c3c;
+}
+
+/* --- NEW: Home Link Style --- */
+.home-link {
+    display: block;
+    margin-top: 20px;
+    color: #3498db;
 }
