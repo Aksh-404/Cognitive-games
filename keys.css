@@ -49,12 +49,26 @@ body {
     user-select: none;
     transition: border-color 0.1s ease-in-out, background-color 0.1s ease-in-out;
 }
+/* Reduce cell size for larger grids */
+.cell.small {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    font-size: 2em;
+}
+.cell.tiny {
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    font-size: 1.8em;
+}
+
 
 .cell.player {
     background-color: #3498db;
 }
 
-/* --- UPDATED BORDER FEEDBACK CLASSES --- */
+/* --- BORDER FEEDBACK CLASSES --- */
 .border-red-top { border-top-color: #e74c3c !important; }
 .border-red-right { border-right-color: #e74c3c !important; }
 .border-red-bottom { border-bottom-color: #e74c3c !important; }
@@ -64,7 +78,6 @@ body {
 .border-green-right { border-right-color: #2ecc71 !important; }
 .border-green-bottom { border-bottom-color: #2ecc71 !important; }
 .border-green-left { border-left-color: #2ecc71 !important; }
-/* --- END UPDATED BORDER FEEDBACK --- */
 
 
 #feedback {
@@ -93,6 +106,27 @@ body {
 #start-btn.hidden {
     display: none;
 }
+
+/* --- NEW BUTTON STYLE --- */
+#show-answer-btn {
+    background-color: #f39c12; /* Orange */
+    color: white;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-right: 10px;
+    transition: background-color 0.2s;
+}
+#show-answer-btn:hover {
+    background-color: #e67e22;
+}
+#show-answer-btn.hidden {
+    display: none;
+}
+/* --- END NEW STYLE --- */
 
 .home-link {
     display: block;
