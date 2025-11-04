@@ -4,6 +4,7 @@ const qNumEl = document.getElementById('qNum');
 const bCont = document.getElementById('bubbles-container');
 const fEl = document.getElementById('feedback');
 const startBtn = document.getElementById('start-btn');
+const resultsEl = document.getElementById('results-container'); // --- NEW ---
 
 // Game State
 let qNum = 1;
@@ -12,15 +13,23 @@ let sel = []; // Selected bubbles
 let bubbles = []; // Current question's bubbles
 let timer;
 let time = 15;
-let score = 0; // Score tracker
+let score = 0; 
+let gameHistory = []; // --- NEW: Tracks all answers ---
 
 // --- Game Logic ---
 
 function startGame() {
     startBtn.classList.add('hidden');
     fEl.textContent = 'Select 3 bubbles in ascending order.';
+    
+    // --- NEW: Reset displays ---
+    resultsEl.classList.add('hidden');
+    resultsEl.innerHTML = '';
+    bCont.classList.remove('hidden');
+    
     qNum = 1;
-    score = 0; // Reset score on start
+    score = 0;
+    gameHistory = []; // Clear history
     nextQuestion();
 }
 
@@ -62,34 +71,28 @@ function updateTimer() {
         clearInterval(timer);
         fEl.textContent = 'Time out! Moving to next...';
         fEl.style.color = '#e74c3c';
-        setTimeout(() => handleAnswer(false), 1000); // Pass false for incorrect
+        // --- UPDATED: Pass 'timeout' status ---
+        setTimeout(() => handleAnswer(false, 'timeout'), 1000); 
     }
 }
 
 function selectBubble(bEl, id) {
-    // Prevent selection if 3 are already chosen or time is up
     if (sel.length >= 3 || time <= 0) return;
 
     const selIdx = sel.indexOf(id);
 
     if (selIdx > -1) {
-        // Deselect
         sel.splice(selIdx, 1);
         bEl.classList.remove('selected');
     } else {
-        // Select
         sel.push(id);
         bEl.classList.add('selected');
     }
 
-    // Check answer if 3 are selected
     if (sel.length === 3) {
         clearInterval(timer);
         
-        // Find the values of the selected bubbles
         const selVals = sel.map(id => bubbles.find(b => b.id === id).val);
-        
-        // Check if they are in ascending order
         const isCorrect = selVals[0] < selVals[1] && selVals[1] < selVals[2];
         
         if (isCorrect) {
@@ -100,14 +103,27 @@ function selectBubble(bEl, id) {
             fEl.style.color = '#e74c3c';
         }
         
-        setTimeout(() => handleAnswer(isCorrect), 1000);
+        // --- UPDATED: Pass 'answered' status ---
+        setTimeout(() => handleAnswer(isCorrect, 'answered'), 1000);
     }
 }
 
-function handleAnswer(isCorrect) {
+// --- UPDATED: 'status' param added ---
+function handleAnswer(isCorrect, status) {
     if (isCorrect) {
-        score++; // Increment score if correct
+        score++;
     }
+    
+    // --- NEW: Log the result ---
+    let userSelection = sel.map(id => bubbles.find(b => b.id === id));
+    gameHistory.push({
+        qNum: qNum,
+        bubbles: [...bubbles], // Store a copy of the bubbles
+        userSelection: userSelection,
+        isCorrect: isCorrect,
+        status: status
+    });
+    // --- End of new log ---
     
     qNum++;
     fEl.textContent = 'Select 3 bubbles in ascending order.';
@@ -115,42 +131,89 @@ function handleAnswer(isCorrect) {
     nextQuestion();
 }
 
+// --- UPDATED: Build the entire results table ---
 function endGame() {
-    // Show final score
-    bCont.innerHTML = `<h2>Game Over!</h2><h3>Your Score: ${score} / ${totalQ}</h3>`;
-    fEl.textContent = `Well done! Click "Play Again?" to improve your score.`;
+    // Hide game, show results
+    bCont.classList.add('hidden');
+    bCont.innerHTML = '';
+    resultsEl.classList.remove('hidden');
+    fEl.textContent = 'Review your performance below.';
+    
+    let resultsHTML = `
+        <h2>Game Over!</h2>
+        <h3>Your Score: ${score} / ${totalQ}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Q#</th>
+                    <th>Your Answer</th>
+                    <th>Correct Answer</th>
+                    <th>Bubbles (and values)</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    for (const result of gameHistory) {
+        const rowClass = result.isCorrect ? 'result-correct' : 'result-incorrect';
+        
+        // Format bubbles and values
+        const allBubbles = result.bubbles
+            .map(b => `<div>${b.text} = <strong>${b.val}</strong></div>`)
+            .join('');
+            
+        // Format correct answer
+        const correctOrder = [...result.bubbles]
+            .sort((a, b) => a.val - b.val)
+            .map(b => b.text)
+            .join(' <br> ');
+            
+        // Format user's answer
+        let yourOrder;
+        if (result.status === 'timeout') {
+            yourOrder = '<strong>TIME OUT</strong>';
+        } else if (result.userSelection.length < 3) {
+            yourOrder = '<strong>INCOMPLETE</strong>';
+        } else {
+            yourOrder = result.userSelection.map(b => b.text).join(' <br> ');
+        }
+        
+        resultsHTML += `
+            <tr class="${rowClass}">
+                <td>${result.qNum}</td>
+                <td>${yourOrder}</td>
+                <td>${correctOrder}</td>
+                <td>${allBubbles}</td>
+            </tr>
+        `;
+    }
+    
+    resultsHTML += `</tbody></table>`;
+    resultsEl.innerHTML = resultsHTML;
+    
     startBtn.textContent = 'Play Again?';
     startBtn.classList.remove('hidden');
 }
 
-// --- Bubble Generation ---
+// --- Bubble Generation (No Changes) ---
 
 function generateBubbles(diff) {
     let b = [];
     
-    // Difficulty scaling: 1-8 (int), 9-16 (mixed), 17-25 (decimals)
     if (diff < 9) {
-        // Easy: Integer operations
         b = [genOp('int'), genOp('int'), genOp('int')];
     } else if (diff < 17) {
-        // Medium: Mix of int and decimal
         b = [genOp('int'), genOp('dec'), genOp('int')];
     } else {
-        // Hard: Decimal operations
         b = [genOp('dec'), genOp('dec'), genOp('dec')];
     }
 
-    // Ensure all values are unique
     const vals = b.map(x => x.val);
     if (new Set(vals).size !== 3) {
-        // If not unique, regenerate
         return generateBubbles(diff);
     }
     
-    // Assign IDs and sort by value
     b.forEach((x, i) => x.id = i);
-    
-    // The correct answer is always 0, 1, 2 in order of value
     b.sort((a, b) => a.val - b.val);
     
     return b;
@@ -166,26 +229,21 @@ function genOp(type) {
         n2 = randInt(1, 20);
         
         if (op === '/') {
-            // Ensure whole number division
-            n2 = n2 === 0 ? 1 : n2; // Avoid div by zero
-            n1 = n1 * n2; // Make n1 divisible by n2
+            n2 = n2 === 0 ? 1 : n2; 
+            n1 = n1 * n2; 
         }
         if (op === '-') {
-            // Ensure positive result
             if (n1 < n2) [n1, n2] = [n2, n1];
-            // --- THIS IS THE FIX ---
-            // The stray underscore from the previous version is gone.
-            if(n1 === n2) n1 += 1; // Avoid 0 result
+            if(n1 === n2) n1 += 1; 
         }
-
-    } else { // type === 'dec'
+    } else { 
         n1 = randDec(1, 10);
         n2 = randDec(1, 10);
         
-        if (op === '/') n2 = randDec(2, 10); // Avoid division by small num
+        if (op === '/') n2 = randDec(2, 10); 
         if (op === '-') {
             if (n1 < n2) [n1, n2] = [n2, n1];
-            if(n1 === n2) n1 += 0.1; // Avoid 0 result
+            if(n1 === n2) n1 += 0.1; 
         }
     }
 
@@ -196,14 +254,12 @@ function genOp(type) {
         case '/': val = n1 / n2; text = `${n1} / ${n2}`; break;
     }
     
-    // Add modulo and squares for variety
     if (type === 'int' && Math.random() > 0.7) {
         n1 = randInt(10, 30);
         n2 = randInt(2, 10);
         val = n1 % n2;
         text = `${n1} % ${n2}`;
     } else if (type === 'dec' && Math.random() > 0.7) {
-        // Mix in an int * dec
         n1 = randInt(2, 10);
         n2 = randDec(2, 10);
         val = n1 * n2;
@@ -213,7 +269,6 @@ function genOp(type) {
     return { text: text, val: parseFloat(val.toFixed(2)) };
 }
 
-// Helper functions
 function randInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -221,5 +276,4 @@ function randDec(min, max) {
     return parseFloat((Math.random() * (max - min) + min).toFixed(1));
 }
 
-// Start Button Event
 startBtn.addEventListener('click', startGame);
