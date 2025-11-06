@@ -11,7 +11,8 @@ body {
 
 #game-container {
     width: 90%;
-    max-width: 600px;
+    /* Max width will be set by JS */
+    max-width: 1200px; /* Increase max width for larger grids */
     background: #fff;
     border-radius: 10px;
     padding: 20px;
@@ -36,36 +37,29 @@ body {
     /* Grid template columns/rows set by JS */
 }
 
+/* --- UPDATED: Tile Size --- */
 .cell {
-    width: 60px;
-    height: 60px;
+    width: 120px;  /* Doubled width */
+    height: 120px; /* Doubled height */
     background-color: #ecf0f1;
     border: 1px solid #bdc3c7;
-    box-sizing: border-box; /* Important for border */
+    box-sizing: border-box;
     position: relative;
     cursor: pointer;
-    font-size: 2.5em; /* For emojis */
-    line-height: 60px;
+    font-size: 4em;   /* Increased icon size */
+    line-height: 120px; /* Centered icon */
     user-select: none;
-    transition: border-color 0.1s ease-in-out, background-color 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out; /* Updated transition */
 }
-/* Reduce cell size for larger grids */
-.cell.small {
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    font-size: 2em;
-}
-.cell.tiny {
-    width: 45px;
-    height: 45px;
-    line-height: 45px;
-    font-size: 1.8em;
-}
-
 
 .cell.player {
     background-color: #3498db;
+}
+
+/* --- NEW: Visited Path Style --- */
+.cell.visited {
+    background-color: #333; /* Black */
+    opacity: 0.8;
 }
 
 /* --- BORDER FEEDBACK CLASSES --- */
@@ -78,7 +72,6 @@ body {
 .border-green-right { border-right-color: #2ecc71 !important; }
 .border-green-bottom { border-bottom-color: #2ecc71 !important; }
 .border-green-left { border-left-color: #2ecc71 !important; }
-
 
 #feedback {
     font-size: 1.1em;
@@ -102,12 +95,10 @@ body {
 #start-btn:hover {
     background-color: #27ae60;
 }
-
 #start-btn.hidden {
     display: none;
 }
 
-/* --- NEW BUTTON STYLE --- */
 #show-answer-btn {
     background-color: #f39c12; /* Orange */
     color: white;
@@ -126,7 +117,6 @@ body {
 #show-answer-btn.hidden {
     display: none;
 }
-/* --- END NEW STYLE --- */
 
 .home-link {
     display: block;
