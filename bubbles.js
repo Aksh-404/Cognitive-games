@@ -4,7 +4,7 @@ const qNumEl = document.getElementById('qNum');
 const bCont = document.getElementById('bubbles-container');
 const fEl = document.getElementById('feedback');
 const startBtn = document.getElementById('start-btn');
-const resultsEl = document.getElementById('results-container'); // --- NEW ---
+const resultsEl = document.getElementById('results-container'); 
 
 // Game State
 let qNum = 1;
@@ -14,7 +14,7 @@ let bubbles = []; // Current question's bubbles
 let timer;
 let time = 15;
 let score = 0; 
-let gameHistory = []; // --- NEW: Tracks all answers ---
+let gameHistory = []; // Tracks all answers
 
 // --- Game Logic ---
 
@@ -22,14 +22,13 @@ function startGame() {
     startBtn.classList.add('hidden');
     fEl.textContent = 'Select 3 bubbles in ascending order.';
     
-    // --- NEW: Reset displays ---
     resultsEl.classList.add('hidden');
     resultsEl.innerHTML = '';
     bCont.classList.remove('hidden');
     
     qNum = 1;
     score = 0;
-    gameHistory = []; // Clear history
+    gameHistory = []; 
     nextQuestion();
 }
 
@@ -71,7 +70,6 @@ function updateTimer() {
         clearInterval(timer);
         fEl.textContent = 'Time out! Moving to next...';
         fEl.style.color = '#e74c3c';
-        // --- UPDATED: Pass 'timeout' status ---
         setTimeout(() => handleAnswer(false, 'timeout'), 1000); 
     }
 }
@@ -103,27 +101,23 @@ function selectBubble(bEl, id) {
             fEl.style.color = '#e74c3c';
         }
         
-        // --- UPDATED: Pass 'answered' status ---
         setTimeout(() => handleAnswer(isCorrect, 'answered'), 1000);
     }
 }
 
-// --- UPDATED: 'status' param added ---
 function handleAnswer(isCorrect, status) {
     if (isCorrect) {
         score++;
     }
     
-    // --- NEW: Log the result ---
     let userSelection = sel.map(id => bubbles.find(b => b.id === id));
     gameHistory.push({
         qNum: qNum,
-        bubbles: [...bubbles], // Store a copy of the bubbles
+        bubbles: [...bubbles], 
         userSelection: userSelection,
         isCorrect: isCorrect,
         status: status
     });
-    // --- End of new log ---
     
     qNum++;
     fEl.textContent = 'Select 3 bubbles in ascending order.';
@@ -131,7 +125,6 @@ function handleAnswer(isCorrect, status) {
     nextQuestion();
 }
 
-// --- UPDATED: Build the entire results table ---
 function endGame() {
     // Hide game, show results
     bCont.classList.add('hidden');
@@ -157,18 +150,15 @@ function endGame() {
     for (const result of gameHistory) {
         const rowClass = result.isCorrect ? 'result-correct' : 'result-incorrect';
         
-        // Format bubbles and values
         const allBubbles = result.bubbles
             .map(b => `<div>${b.text} = <strong>${b.val}</strong></div>`)
             .join('');
             
-        // Format correct answer
         const correctOrder = [...result.bubbles]
             .sort((a, b) => a.val - b.val)
             .map(b => b.text)
             .join(' <br> ');
             
-        // Format user's answer
         let yourOrder;
         if (result.status === 'timeout') {
             yourOrder = '<strong>TIME OUT</strong>';
@@ -195,30 +185,66 @@ function endGame() {
     startBtn.classList.remove('hidden');
 }
 
-// --- Bubble Generation (No Changes) ---
+// --- Bubble Generation ---
 
+// --- UPDATED: Difficulty Tuning ---
 function generateBubbles(diff) {
     let b = [];
-    
+    let type1, type2, type3;
+
+    // Difficulty scaling
     if (diff < 9) {
-        b = [genOp('int'), genOp('int'), genOp('int')];
+        type1 = 'int'; type2 = 'int'; type3 = 'int';
     } else if (diff < 17) {
-        b = [genOp('int'), genOp('dec'), genOp('int')];
+        type1 = 'int'; type2 = 'dec'; type3 = 'int';
     } else {
-        b = [genOp('dec'), genOp('dec'), genOp('dec')];
+        type1 = 'dec'; type2 = 'dec'; type3 = 'dec';
     }
+    
+    b = [genOp(type1), genOp(type2), genOp(type3)];
 
     const vals = b.map(x => x.val);
+    
+    // --- Difficulty Tuning Logic ---
+    // 1. Ensure all values are unique
     if (new Set(vals).size !== 3) {
-        return generateBubbles(diff);
+        return generateBubbles(diff); // Regenerate
     }
     
+    vals.sort((a, b) => a - b);
+    
+    const minVal = vals[0];
+    const midVal = vals[1];
+    const maxVal = vals[2];
+    
+    const totalDiff = maxVal - minVal;
+    const minGap = Math.min(midVal - minVal, maxVal - midVal);
+    
+    // 2. Check "cognitive spot" constraints
+    const isIntGame = type1 === 'int' && type2 === 'int' && type3 === 'int';
+    
+    if (isIntGame) {
+        if (totalDiff > 40 || totalDiff < 5 || minGap < 2) {
+            // Too easy (diff > 40), too clustered (diff < 5), or two bubbles are too close (gap < 2)
+            return generateBubbles(diff); // Regenerate
+        }
+    } else { // Decimal/mixed game
+        if (totalDiff > 25 || totalDiff < 3 || minGap < 0.5) {
+            // Same logic, but for decimals
+            return generateBubbles(diff); // Regenerate
+        }
+    }
+    // --- End Tuning ---
+    
+    // Assign IDs and sort by value (as before)
     b.forEach((x, i) => x.id = i);
     b.sort((a, b) => a.val - b.val);
     
     return b;
 }
 
+
+// --- UPDATED: Modulo operator is now division, and squares are added ---
 function genOp(type) {
     const ops = ['+', '-', '*', '/'];
     const op = ops[Math.floor(Math.random() * ops.length)];
@@ -236,7 +262,8 @@ function genOp(type) {
             if (n1 < n2) [n1, n2] = [n2, n1];
             if(n1 === n2) n1 += 1; 
         }
-    } else { 
+
+    } else { // type === 'dec'
         n1 = randDec(1, 10);
         n2 = randDec(1, 10);
         
@@ -254,20 +281,36 @@ function genOp(type) {
         case '/': val = n1 / n2; text = `${n1} / ${n2}`; break;
     }
     
+    // --- MODIFICATION HERE ---
+    // Add 'division as %' and squares for variety
     if (type === 'int' && Math.random() > 0.7) {
-        n1 = randInt(10, 30);
-        n2 = randInt(2, 10);
-        val = n1 % n2;
-        text = `${n1} % ${n2}`;
+        // 70% chance for division, 30% for square
+        if (Math.random() > 0.3) {
+            // User wants 6%2 = 3 (division)
+            n2 = randInt(2, 10); // Divisor
+            let m = randInt(2, 10); // Multiplier
+            n1 = n2 * m;
+            val = n1 / n2;
+            text = `${n1} % ${n2}`; // Display as %
+        } else {
+            // Add squares
+            n1 = randInt(3, 12); // e.g., 3*3 to 12*12
+            val = n1 * n1;
+            text = `${n1}²`;
+        }
+
     } else if (type === 'dec' && Math.random() > 0.7) {
+        // Mix in an int * dec
         n1 = randInt(2, 10);
         n2 = randDec(2, 10);
         val = n1 * n2;
         text = `${n1} x ${n2}`;
     }
+    // --- END MODIFICATION ---
 
     return { text: text, val: parseFloat(val.toFixed(2)) };
 }
+
 
 function randInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
